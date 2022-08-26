@@ -141,7 +141,6 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       OnPlatformViewCreatedCallback onPlatformViewCreated,
       Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers) {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      if (useHybridComposition) {
         return PlatformViewLink(
           viewType: 'plugins.flutter.io/mapbox_gl',
           surfaceFactory: (
@@ -156,8 +155,8 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
             );
           },
           onCreatePlatformView: (PlatformViewCreationParams params) {
-            final SurfaceAndroidViewController controller =
-                PlatformViewsService.initSurfaceAndroidView(
+            final AndroidViewController controller =
+                PlatformViewsService.initExpensiveAndroidView(
               id: params.id,
               viewType: 'plugins.flutter.io/mapbox_gl',
               layoutDirection: TextDirection.ltr,
@@ -176,15 +175,6 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
             return controller;
           },
         );
-      } else {
-        return AndroidView(
-          viewType: 'plugins.flutter.io/mapbox_gl',
-          onPlatformViewCreated: onPlatformViewCreated,
-          gestureRecognizers: gestureRecognizers,
-          creationParams: creationParams,
-          creationParamsCodec: const StandardMessageCodec(),
-        );
-      }
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(
         viewType: 'plugins.flutter.io/mapbox_gl',
@@ -211,10 +201,9 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
   }
 
   @override
-  Future<bool?> animateCamera(cameraUpdate, {Duration? duration}) async {
+  Future<bool?> animateCamera(cameraUpdate) async {
     return await _channel.invokeMethod('camera#animate', <String, dynamic>{
       'cameraUpdate': cameraUpdate.toJson(),
-      'duration': duration?.inMilliseconds,
     });
   }
 
@@ -679,10 +668,4 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       'geojsonFeature': jsonEncode(geojsonFeature)
     });
   }
-
-  @override
-  void forceResizeWebMap() {}
-
-  @override
-  void resizeWebMap() {}
 }
